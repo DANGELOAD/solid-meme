@@ -14,6 +14,8 @@ Enter your base rate and your cut percentage. The calculator shows you:
 
 Just open `index.html` in any browser. No install, no dependencies, no internet required after the page loads (fonts load from Google Fonts on first visit).
 
+Or [Click Here](https://dangeload.github.io/solid-meme/)
+
 ## Files
 
 - `index.html` — the entire calculator, self-contained
