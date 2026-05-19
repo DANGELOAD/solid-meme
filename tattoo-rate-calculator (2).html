@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rate Calculator</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #f5f2ee;
+      --surface: #ffffff;
+      --border: #d8d3cc;
+      --text: #1a1814;
+      --muted: #7a7570;
+      --artist: #2a6b4a;
+      --artist-light: #e8f5ee;
+      --boss: #8b3a2a;
+      --boss-light: #faeee9;
+      --scam: #c05a00;
+      --scam-light: #fef3e8;
+      --accent: #2a4b8b;
+      --accent-light: #eef1fa;
+      --mono: 'DM Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: var(--sans);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 1rem 4rem;
+    }
+
+    .page {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--muted);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    /* Input section */
+    .input-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-family: var(--mono);
+    }
+
+    .field input {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 500;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      background: var(--surface);
+      color: var(--text);
+      width: 160px;
+      transition: border-color 0.15s;
+      outline: none;
+    }
+
+    .field input:focus {
+      border-color: var(--accent);
+    }
+
+    .field input[readonly] {
+      background: var(--accent-light);
+      color: var(--accent);
+      border-color: transparent;
+      cursor: default;
+    }
+
+    .field input.pct-input {
+      width: 110px;
+    }
+
+    .arrow {
+      font-size: 1.2rem;
+      color: var(--muted);
+      padding-bottom: 0.6rem;
+    }
+
+    .plus10-label {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--scam);
+      font-weight: 500;
+      padding-bottom: 0.5rem;
+    }
+
+    /* Split row */
+    .split-row {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-end;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .split-divider {
+      font-family: var(--mono);
+      font-size: 1rem;
+      color: var(--muted);
+      padding-bottom: 0.6rem;
+    }
+
+    .split-note {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--muted);
+      padding-bottom: 0.7rem;
+      align-self: flex-end;
+    }
+
+    .boss-pct-display {
+      font-family: var(--mono);
+      font-size: 1.4rem;
+      font-weight: 500;
+      color: var(--boss);
+      padding: 0.5rem 0.75rem;
+      background: var(--boss-light);
+      border: 2px solid transparent;
+      border-radius: 6px;
+      width: 110px;
+    }
+
+    /* Section headers */
+    .scenario-header {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .scenarios {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 500px) {
+      .scenarios { grid-template-columns: 1fr; }
+    }
+
+    .scenario-col {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .scenario-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+    }
+
+    .scenario-title.old { color: var(--artist); }
+    .scenario-title.new { color: var(--scam); }
+
+    /* Calc cards */
+    .calc-card {
+      border-radius: 8px;
+      padding: 0.9rem 1rem;
+      border: 1.5px solid;
+    }
+
+    .calc-card.artist {
+      background: var(--artist-light);
+      border-color: #b8ddc9;
+    }
+
+    .calc-card.boss {
+      background: var(--boss-light);
+      border-color: #e8c4bb;
+    }
+
+    .calc-card.scam {
+      background: var(--scam-light);
+      border-color: #f5c9a0;
+    }
+
+    .card-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.3rem;
+    }
+
+    .card-label.artist { color: var(--artist); }
+    .card-label.boss { color: var(--boss); }
+    .card-label.scam { color: var(--scam); }
+
+    .card-formula {
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .card-result {
+      font-family: var(--mono);
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+
+    .card-result.artist { color: var(--artist); }
+    .card-result.boss { color: var(--boss); }
+    .card-result.scam { color: var(--scam); }
+
+    .card-pct {
+      font-size: 0.75rem;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-top: 0.2rem;
+    }
+
+    /* Divider */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2rem 0;
+    }
+
+    /* Summary box */
+    .summary {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+    }
+
+    .summary-title {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin-bottom: 1rem;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row .label { color: var(--muted); font-size: 0.85rem; }
+    .summary-row .val { font-family: var(--mono); font-weight: 500; }
+    .summary-row.highlight .val { color: var(--scam); }
+
+    .callout {
+      margin-top: 1.25rem;
+      padding: 0.85rem 1rem;
+      background: var(--scam-light);
+      border-left: 3px solid var(--scam);
+      border-radius: 4px;
+      font-size: 0.85rem;
+      color: var(--scam);
+      line-height: 1.5;
+    }
+
+    .callout strong { font-weight: 700; }
+
+    .error-msg {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--boss);
+      margin-top: 0.25rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <h1>Rate Calculator</h1>
+  <p class="subtitle">See what you actually take home — old system vs new system.</p>
+
+  <!-- Rate inputs -->
+  <div class="input-row">
+    <div class="field">
+      <label>Your Base Rate ($)</label>
+      <input type="number" id="baseRate" value="200" min="0" step="1"/>
+    </div>
+    <div class="arrow">→</div>
+    <div>
+      <div class="plus10-label">+10% (new system)</div>
+      <div class="field">
+        <label>You now charge ($)</label>
+        <input type="number" id="plus10" readonly/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Split inputs -->
+  <div class="split-row">
+    <div class="field">
+      <label>Your cut (%)</label>
+      <input type="number" id="artistPct" class="pct-input" value="60" min="1" max="99" step="1"/>
+      <span class="error-msg" id="pct-error">Must be 1–99</span>
+    </div>
+    <div class="split-divider">+</div>
+    <div class="field">
+      <label>Boss cut (%)</label>
+      <div class="boss-pct-display" id="bossPctDisplay">40%</div>
+    </div>
+    <div class="split-note">= 100%</div>
+  </div>
+
+  <!-- Side by side -->
+  <div class="scenario-header">Breakdown by system</div>
+  <div class="scenarios">
+
+    <div class="scenario-col">
+      <div class="scenario-title old">Old System</div>
+
+      <div class="calc-card artist">
+        <div class="card-label artist">You (artist)</div>
+        <div class="card-formula" id="old-artist-formula">base × 0.60</div>
+        <div class="card-result artist" id="old-artist">—</div>
+        <div class="card-pct" id="old-artist-pct">60% of what&#39;s charged</div>
+      </div>
+
+      <div class="calc-card boss">
+        <div class="card-label boss">Boss</div>
+        <div class="card-formula" id="old-boss-formula">base × 0.40</div>
+        <div class="card-result boss" id="old-boss">—</div>
+        <div class="card-pct" id="old-boss-pct">40% of what&#39;s charged</div>
+      </div>
+    </div>
+
+    <div class="scenario-col">
+      <div class="scenario-title new">New System (+10%)</div>
+
+      <div class="calc-card artist">
+        <div class="card-label artist">You (artist)</div>
+        <div class="card-formula" id="new-artist-formula">(base + 10%) × 0.60</div>
+        <div class="card-result artist" id="new-artist">—</div>
+        <div class="card-pct" id="new-artist-pct">— % of what&#39;s charged</div>
+      </div>
+
+      <div class="calc-card scam">
+        <div class="card-label scam">Boss</div>
+        <div class="card-formula" id="new-boss-formula">base×0.40 + base×0.10</div>
+        <div class="card-result scam" id="new-boss">—</div>
+        <div class="card-pct" id="new-boss-pct">— % of what&#39;s charged</div>
+      </div>
+    </div>
+
+  </div>
+
+  <hr class="divider"/>
+
+  <!-- Summary -->
+  <div class="summary">
+    <div class="summary-title">What actually changed</div>
+
+    <div class="summary-row">
+      <span class="label">You quoted the customer</span>
+      <span class="val" id="s-charged">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">You take home (same as before)</span>
+      <span class="val" id="s-artist">—</span>
+    </div>
+    <div class="summary-row">
+      <span class="label">Your actual % of the new charge</span>
+      <span class="val" id="s-artist-pct">—</span>
+    </div>
+    <div class="summary-row highlight">
+      <span class="label">Extra $ boss pockets vs old system</span>
+      <span class="val" id="s-extra">—</span>
+    </div>
+
+    <div class="callout" id="callout">
+      Enter a rate above to see the summary.
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const fmt  = (n) => '$' + n.toFixed(2);
+  const pct2 = (n) => (n * 100).toFixed(4) + '%';
+  const pctFmt = (n) => (n * 100).toFixed(2) + '%';
+
+  function calc() {
+    const base = parseFloat(document.getElementById('baseRate').value) || 0;
+    const artistPctRaw = parseFloat(document.getElementById('artistPct').value);
+    const errorEl = document.getElementById('pct-error');
+
+    // Validate
+    if (isNaN(artistPctRaw) || artistPctRaw < 1 || artistPctRaw > 99) {
+      errorEl.style.display = 'block';
+      return;
+    }
+    errorEl.style.display = 'none';
+
+    const aFrac = artistPctRaw / 100;
+    const bFrac = 1 - aFrac;
+
+    // Update boss display
+    document.getElementById('bossPctDisplay').textContent = (bFrac * 100).toFixed(0) + '%';
+
+    const newCharge = base * 1.1;
+
+    // Old system — split of base
+    const oldArtist = base * aFrac;
+    const oldBoss   = base * bFrac;
+
+    // New system — artist still gets aFrac of BASE, boss gets bFrac of base + 10% of base
+    const artistActual = base * aFrac;
+    const bossActual   = base * bFrac + base * 0.1;
+
+    const artistPctOfNew = artistActual / newCharge;
+    const bossPctOfNew   = bossActual   / newCharge;
+    const extraBoss      = bossActual - oldBoss;
+
+    // Formulas
+    const aStr = (aFrac).toFixed(2);
+    const bStr = (bFrac).toFixed(2);
+
+    document.getElementById('old-artist-formula').textContent = 'base \u00d7 ' + aStr;
+    document.getElementById('old-boss-formula').textContent   = 'base \u00d7 ' + bStr;
+    document.getElementById('new-artist-formula').textContent = '(base + 10%) \u00d7 ' + aStr;
+    document.getElementById('new-boss-formula').textContent   = 'base\u00d7' + bStr + ' + base\u00d70.10';
+
+    // Old
+    document.getElementById('old-artist').textContent = fmt(oldArtist);
+    document.getElementById('old-boss').textContent   = fmt(oldBoss);
+    document.getElementById('old-artist-pct').textContent = pctFmt(aFrac) + ' of what\'s charged';
+    document.getElementById('old-boss-pct').textContent   = pctFmt(bFrac) + ' of what\'s charged';
+
+    // New
+    document.getElementById('new-artist').textContent    = fmt(artistActual);
+    document.getElementById('new-artist-pct').textContent = pct2(artistPctOfNew) + ' of what\'s charged';
+    document.getElementById('new-boss').textContent       = fmt(bossActual);
+    document.getElementById('new-boss-pct').textContent   = pct2(bossPctOfNew) + ' of what\'s charged';
+
+    // Summary
+    document.getElementById('plus10').value = newCharge.toFixed(2);
+    document.getElementById('s-charged').textContent    = fmt(newCharge);
+    document.getElementById('s-artist').textContent     = fmt(artistActual);
+    document.getElementById('s-artist-pct').textContent = pct2(artistPctOfNew);
+    document.getElementById('s-extra').textContent      = fmt(extraBoss);
+
+    document.getElementById('callout').innerHTML =
+      'You charge the customer <strong>' + fmt(newCharge) + '</strong> instead of <strong>' + fmt(base) + '</strong>. ' +
+      'You still take home <strong>' + fmt(artistActual) + '</strong> — exactly what ' + pctFmt(aFrac) + ' of the original was. ' +
+      'But because you\'re quoting a higher number, you\'re now only getting <strong>' + pct2(artistPctOfNew) + '</strong> of what the customer pays. ' +
+      'The boss gets an extra <strong>' + fmt(extraBoss) + '</strong> per session, for free.';
+  }
+
+  document.getElementById('baseRate').addEventListener('input', calc);
+  document.getElementById('artistPct').addEventListener('input', calc);
+  calc();
+</script>
+</body>
+</html>
