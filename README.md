@@ -14,14 +14,6 @@ Enter your base rate and your cut percentage. The calculator shows you:
 
 Just open `index.html` in any browser. No install, no dependencies, no internet required after the page loads (fonts load from Google Fonts on first visit).
 
-## Deploying to GitHub Pages
-
-1. Create a new repository on GitHub
-2. Drop `index.html` (rename from `tattoo-rate-calculator.html`) and this `README.md` into the root
-3. Go to **Settings → Pages**
-4. Under **Source**, select `main` branch and `/ (root)`
-5. Hit **Save** — GitHub will give you a URL to share
-
 ## Files
 
 - `index.html` — the entire calculator, self-contained
