@@ -19,8 +19,8 @@
       --artist-light: #e8f5ee;
       --boss: #8b3a2a;
       --boss-light: #faeee9;
-      --scam: #c05a00;
-      --scam-light: #fef3e8;
+      --highlight: #c05a00;
+      --highlight-light: #fef3e8;
       --accent: #2a4b8b;
       --accent-light: #eef1fa;
       --mono: 'DM Mono', monospace;
@@ -98,13 +98,6 @@
       border-color: var(--accent);
     }
 
-    .field input[readonly] {
-      background: var(--accent-light);
-      color: var(--accent);
-      border-color: transparent;
-      cursor: default;
-    }
-
     .field input.pct-input {
       width: 110px;
     }
@@ -118,7 +111,7 @@
     .plus10-label {
       font-family: var(--mono);
       font-size: 0.8rem;
-      color: var(--scam);
+      color: var(--highlight);
       font-weight: 500;
       padding-bottom: 0.5rem;
     }
@@ -199,7 +192,7 @@
     }
 
     .scenario-title.old { color: var(--artist); }
-    .scenario-title.new { color: var(--scam); }
+    .scenario-title.new { color: var(--highlight); }
 
     /* Calc cards */
     .calc-card {
@@ -218,8 +211,8 @@
       border-color: #e8c4bb;
     }
 
-    .calc-card.scam {
-      background: var(--scam-light);
+    .calc-card.highlight {
+      background: var(--highlight-light);
       border-color: #f5c9a0;
     }
 
@@ -233,7 +226,7 @@
 
     .card-label.artist { color: var(--artist); }
     .card-label.boss { color: var(--boss); }
-    .card-label.scam { color: var(--scam); }
+    .card-label.highlight { color: var(--highlight); }
 
     .card-formula {
       font-family: var(--mono);
@@ -250,7 +243,7 @@
 
     .card-result.artist { color: var(--artist); }
     .card-result.boss { color: var(--boss); }
-    .card-result.scam { color: var(--scam); }
+    .card-result.highlight { color: var(--highlight); }
 
     .card-pct {
       font-size: 0.75rem;
@@ -296,16 +289,16 @@
 
     .summary-row .label { color: var(--muted); font-size: 0.85rem; }
     .summary-row .val { font-family: var(--mono); font-weight: 500; }
-    .summary-row.highlight .val { color: var(--scam); }
+    .summary-row.highlight .val { color: var(--highlight); }
 
     .callout {
       margin-top: 1.25rem;
       padding: 0.85rem 1rem;
-      background: var(--scam-light);
-      border-left: 3px solid var(--scam);
+      background: var(--highlight-light);
+      border-left: 3px solid var(--highlight);
       border-radius: 4px;
       font-size: 0.85rem;
-      color: var(--scam);
+      color: var(--highlight);
       line-height: 1.5;
     }
 
@@ -323,8 +316,8 @@
 <body>
 <div class="page">
 
-  <h1>Rate Calculator</h1>
-  <p class="subtitle">See what you actually take home — old system vs new system.</p>
+  <h1>Pay Rate Calculator</h1>
+  <p class="subtitle">A breakdown of how pay is calculated under each system.</p>
 
   <!-- Rate inputs -->
   <div class="input-row">
@@ -334,10 +327,10 @@
     </div>
     <div class="arrow">→</div>
     <div>
-      <div class="plus10-label">+10% (new system)</div>
+      <div class="plus10-label">+10% applied</div>
       <div class="field">
-        <label>You now charge ($)</label>
-        <input type="number" id="plus10" readonly/>
+        <label>Client charge ($)</label>
+        <input type="number" id="plus10"/>
       </div>
     </div>
   </div>
@@ -345,7 +338,7 @@
   <!-- Split inputs -->
   <div class="split-row">
     <div class="field">
-      <label>Your cut (%)</label>
+      <label>Artist % (%)</label>
       <input type="number" id="artistPct" class="pct-input" value="60" min="1" max="99" step="1"/>
       <span class="error-msg" id="pct-error">Must be 1–99</span>
     </div>
@@ -389,10 +382,10 @@
         <div class="card-pct" id="new-artist-pct">— % of what&#39;s charged</div>
       </div>
 
-      <div class="calc-card scam">
-        <div class="card-label scam">Boss</div>
+      <div class="calc-card highlight">
+        <div class="card-label highlight">Boss</div>
         <div class="card-formula" id="new-boss-formula">base×0.40 + base×0.10</div>
-        <div class="card-result scam" id="new-boss">—</div>
+        <div class="card-result highlight" id="new-boss">—</div>
         <div class="card-pct" id="new-boss-pct">— % of what&#39;s charged</div>
       </div>
     </div>
@@ -403,22 +396,22 @@
 
   <!-- Summary -->
   <div class="summary">
-    <div class="summary-title">What actually changed</div>
+    <div class="summary-title">Comparison summary</div>
 
     <div class="summary-row">
-      <span class="label">You quoted the customer</span>
+      <span class="label">Amount charged to client</span>
       <span class="val" id="s-charged">—</span>
     </div>
     <div class="summary-row">
-      <span class="label">You take home (same as before)</span>
+      <span class="label">Artist take-home pay</span>
       <span class="val" id="s-artist">—</span>
     </div>
     <div class="summary-row">
-      <span class="label">Your actual % of the new charge</span>
+      <span class="label">Artist % of amount charged</span>
       <span class="val" id="s-artist-pct">—</span>
     </div>
     <div class="summary-row highlight">
-      <span class="label">Extra $ boss pockets vs old system</span>
+      <span class="label">Additional studio revenue vs old system</span>
       <span class="val" id="s-extra">—</span>
     </div>
 
@@ -434,12 +427,29 @@
   const pct2 = (n) => (n * 100).toFixed(4) + '%';
   const pctFmt = (n) => (n * 100).toFixed(2) + '%';
 
-  function calc() {
+  // Which field is driving the calculation
+  let driver = 'base'; // 'base' or 'client'
+
+  function calcFromBase() {
     const base = parseFloat(document.getElementById('baseRate').value) || 0;
+    const clientVal = base * 1.1;
+    document.getElementById('plus10').value = clientVal.toFixed(2);
+    return base;
+  }
+
+  function calcFromClient() {
+    const client = parseFloat(document.getElementById('plus10').value) || 0;
+    const base = client / 1.1;
+    document.getElementById('baseRate').value = base.toFixed(2);
+    return base;
+  }
+
+  function calc() {
+    const base = driver === 'base' ? calcFromBase() : calcFromClient();
+
     const artistPctRaw = parseFloat(document.getElementById('artistPct').value);
     const errorEl = document.getElementById('pct-error');
 
-    // Validate
     if (isNaN(artistPctRaw) || artistPctRaw < 1 || artistPctRaw > 99) {
       errorEl.style.display = 'block';
       return;
@@ -449,16 +459,13 @@
     const aFrac = artistPctRaw / 100;
     const bFrac = 1 - aFrac;
 
-    // Update boss display
     document.getElementById('bossPctDisplay').textContent = (bFrac * 100).toFixed(0) + '%';
 
     const newCharge = base * 1.1;
 
-    // Old system — split of base
     const oldArtist = base * aFrac;
     const oldBoss   = base * bFrac;
 
-    // New system — artist still gets aFrac of BASE, boss gets bFrac of base + 10% of base
     const artistActual = base * aFrac;
     const bossActual   = base * bFrac + base * 0.1;
 
@@ -466,7 +473,6 @@
     const bossPctOfNew   = bossActual   / newCharge;
     const extraBoss      = bossActual - oldBoss;
 
-    // Formulas
     const aStr = (aFrac).toFixed(2);
     const bStr = (bFrac).toFixed(2);
 
@@ -475,34 +481,33 @@
     document.getElementById('new-artist-formula').textContent = '(base + 10%) \u00d7 ' + aStr;
     document.getElementById('new-boss-formula').textContent   = 'base\u00d7' + bStr + ' + base\u00d70.10';
 
-    // Old
     document.getElementById('old-artist').textContent = fmt(oldArtist);
     document.getElementById('old-boss').textContent   = fmt(oldBoss);
     document.getElementById('old-artist-pct').textContent = pctFmt(aFrac) + ' of what\'s charged';
     document.getElementById('old-boss-pct').textContent   = pctFmt(bFrac) + ' of what\'s charged';
 
-    // New
-    document.getElementById('new-artist').textContent    = fmt(artistActual);
+    document.getElementById('new-artist').textContent     = fmt(artistActual);
     document.getElementById('new-artist-pct').textContent = pct2(artistPctOfNew) + ' of what\'s charged';
     document.getElementById('new-boss').textContent       = fmt(bossActual);
     document.getElementById('new-boss-pct').textContent   = pct2(bossPctOfNew) + ' of what\'s charged';
 
-    // Summary
-    document.getElementById('plus10').value = newCharge.toFixed(2);
     document.getElementById('s-charged').textContent    = fmt(newCharge);
     document.getElementById('s-artist').textContent     = fmt(artistActual);
     document.getElementById('s-artist-pct').textContent = pct2(artistPctOfNew);
     document.getElementById('s-extra').textContent      = fmt(extraBoss);
 
     document.getElementById('callout').innerHTML =
-      'You charge the customer <strong>' + fmt(newCharge) + '</strong> instead of <strong>' + fmt(base) + '</strong>. ' +
-      'You still take home <strong>' + fmt(artistActual) + '</strong> — exactly what ' + pctFmt(aFrac) + ' of the original was. ' +
-      'But because you\'re quoting a higher number, you\'re now only getting <strong>' + pct2(artistPctOfNew) + '</strong> of what the customer pays. ' +
-      'The boss gets an extra <strong>' + fmt(extraBoss) + '</strong> per session, for free.';
+      'Under the new system, the client is charged <strong>' + fmt(newCharge) + '</strong> instead of <strong>' + fmt(base) + '</strong>. ' +
+      'The artist\'s pay remains <strong>' + fmt(artistActual) + '</strong> — ' + pctFmt(aFrac) + ' of the original base rate. ' +
+      'As a proportion of what the client pays, the artist\'s share is <strong>' + pct2(artistPctOfNew) + '</strong>. ' +
+      'The studio receives an additional <strong>' + fmt(extraBoss) + '</strong> per session compared to the old system.';
   }
 
-  document.getElementById('baseRate').addEventListener('input', calc);
+  document.getElementById('baseRate').addEventListener('input', () => { driver = 'base'; calc(); });
+  document.getElementById('plus10').addEventListener('input',   () => { driver = 'client'; calc(); });
   document.getElementById('artistPct').addEventListener('input', calc);
+
+  driver = 'base';
   calc();
 </script>
 </body>
